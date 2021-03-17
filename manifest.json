@@ -1,0 +1,19 @@
+{
+  "name": "BB jiang",
+  "description": "This is an awesome blank page to share links.",
+  "version": "0.1.0",
+  "manifest_version": 3,
+  "permissions": [
+    "activeTab",
+    "tabs"
+  ],
+  "host_permissions": [
+    "https://live.bilibili.com/"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["https://live.bilibili.com/*"],
+      "js": ["content.js"]
+    }
+  ]
+}
