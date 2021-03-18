@@ -34,7 +34,7 @@ const callback = function(mutationsList, observer) {
           danmu.set('content', node.textContent);
         } else if (classList.contains('danmaku-item')) {
           let {uid, uname, ts, danmaku} = node.dataset;
-          ts = ts === '0' ? Date.now() / 1000 >> 0 : ts;
+          ts = ts === '0' ? Date.now() / 1000 >> 0 : Number(ts);
           danmu.set('type', '弹幕');
           danmu.set('uid', uid);
           danmu.set('uname', uname);

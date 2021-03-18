@@ -1,6 +1,7 @@
 import { createApp } from 'vue';
 import App from './App.vue';
-import './style/base.css';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import './style/screen.styl';
 import AV from 'leancloud-storage';
 import {LC_APP_ID, LC_APP_SECRET} from '@/config/leancloud';
 

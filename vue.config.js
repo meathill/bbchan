@@ -5,7 +5,7 @@ module.exports = {
   pages: {
     index: {
       entry: 'src/main.js',
-      title: "Awesome blank page",
+      title: "BB 酱",
     },
   },
   lintOnSave: false,
