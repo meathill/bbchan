@@ -3,42 +3,64 @@ nav.navbar.navbar-expand-lg.nvabar-dark.bg-dark
   .container
     .navbar-brand.text-white BB 酱
 
+dialog.modal-content.w-50(
+  ref="choujiang",
+)
+  header.modal-header
+    h5.modal-title 开始抽奖
+    button.btn-close(type="button", @click="doHideChoujiang")
+  form#choujiang-form.modal-body(
+    @submit.prevent="doChoujiang",
+  )
+    .form-group
+      label.form-label(for="start-time") 开始时间
+      input#start-time.form-control(
+        type="datetime-local",
+        v-model="startTime",
+        required,
+      )
+    .form-group
+      label.form-label(for="end-time") 开始时间
+      input#end-time.form-control(
+        type="datetime-local",
+        v-model="endTime",
+        required,
+      )
+
+  .modal-footer
+    .alert.alert-success.text-center.py-2(v-if="winner") 🎉🎉 恭喜：
+      strong {{winner}}
+      | !! 🎉🎉
+    button.btn.btn-primary(form="choujiang-form") 抽奖
+
 .container.pt-3
   .action-bar.d-flex.justify-content-between.mb-3.align-items-center
-    form(
-      @submit.prevent="doChoujiang",
-    )
-      .form-group
-        label.form-label(for="start-time") 开始时间
-        input#start-time.form-control(
-          type="datetime-local",
-          v-model="startTime",
-          required,
-        )
-      .form-group
-        label.form-label(for="end-time") 开始时间
-        input#end-time.form-control(
-          type="datetime-local",
-          v-model="endTime",
-          required,
-        )
-      button.btn.btn-primary 抽奖
 
-    .alert.alert-success.text-center(v-if="winner")
-      p 🎉🎉 恭喜 🎉🎉
-      h4 {{winner}}!!
+    button.btn.btn-success(
+      type="button",
+      @click="doOpenChoujiang",
+    ) 🎉 抽奖
 
-    .btn-group
-      button.btn.btn-outline-secondary(
-        type="button",
-        :disabled="page === 0",
-        @click="doPrev",
-      ) &lt;
-      button.btn.btn-outline-secondary(
-        type="button",
-        :disabled="!hasNext",
-        @click="doNext",
-      ) &gt;
+    nav
+      ul.pagination.mb-0
+        li.page-item(
+          :class="{disabled: page === 0 || isLoading}",
+        )
+          a.page-link(
+            href="#",
+            @click="doPrev",
+          )
+            span.spinner-border-sm.spinner-border(v-if="isLoading")
+            template(v-else) &laquo;
+        li.page-item(
+          :class="{disabled: !hasNext || isLoading}",
+        )
+          a.page-link(
+            href="#",
+            @click="doNext",
+          )
+            span.spinner-border-sm.spinner-border(v-if="isLoading")
+            template(v-else) &raquo;
   table.table.table-bordered
     thead
       tr
@@ -47,8 +69,8 @@ nav.navbar.navbar-expand-lg.nvabar-dark.bg-dark
         th 时间
     tbody(v-if="isLoading")
       tr
-        td(colspan="4")
-          .spinner-border.spinner-border-sm.mx-auto.my-4
+        td.text-center(colspan="4")
+          span.spinner-border.spinner-border-sm.my-4
     tbody(v-if="list.length")
       tr(v-for="item in list")
         td {{item.uname}}
@@ -76,13 +98,18 @@ export default {
     const startTime = ref('');
     const endTime = ref('');
     const winner = ref('');
+    const choujiang = ref(null);
     const perPage = 20;
 
-    async function refresh(createdAt = '') {
+    async function refresh(createdAt = '', direction) {
       isLoading.value = true;
       const query = new Query(DANMU);
       if (createdAt) {
-        query.greaterThan('createdAt', createdAt);
+        if (direction) {
+          query.lessThan('createdAt', createdAt);
+        } else {
+          query.greaterThan('createdAt', createdAt);
+        }
       }
       query
         .exists('uid')
@@ -98,7 +125,7 @@ export default {
           time,
         };
       });
-      hasNext.value = list.length >= perPage;
+      hasNext.value = result.length >= perPage;
       isLoading.value = false;
     }
 
@@ -106,13 +133,25 @@ export default {
       if (page.value > 0) {
         page.value = page.value - 1;
       }
-      refresh(page.value);
+      const createdAt = list.value[0].model.get('createdAt');
+      refresh(createdAt, 0);
     }
     function doNext() {
       if (hasNext.value) {
         page.value = page.value + 1;
       }
-      refresh(page.value);
+      const createdAt = list.value[list.value.length - 1].model.get('createdAt');
+      refresh(createdAt, 1);
+    }
+    const doOpenChoujiang = () => {
+      if (typeof choujiang.value.showModal === 'function') {
+        choujiang.value.showModal();
+      } else {
+        alert('当前浏览器不支持 `<dialog>`.');
+      }
+    }
+    function doHideChoujiang() {
+      choujiang.value.open = false;
     }
     async function doChoujiang() {
       const query = new Query(DANMU);
@@ -147,9 +186,12 @@ export default {
       startTime,
       endTime,
       winner,
+      choujiang,
 
       doNext,
       doPrev,
+      doOpenChoujiang,
+      doHideChoujiang,
       doChoujiang,
     };
   },
