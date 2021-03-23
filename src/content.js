@@ -15,6 +15,22 @@ const targetNode = document.getElementById('chat-items');
 // Options for the observer (which mutations to observe)
 const config = { childList: true, subtree: true };
 
+async function batchSave() {
+  try {
+    const total = unsaved.length;
+    await AV.Object.saveAll(unsaved);
+    console.log('保存' + total + '条弹幕成功。');
+    unsaved = unsaved.slice(total);
+  } catch (e) {
+    if (e.message.startsWith('A unique field was given a value that is already taken')) {
+      return;
+    }
+    console.log('保存弹幕失败。' + e.message);
+  }
+}
+
+let unsaved = [];
+let timeout;
 // Callback function to execute when mutations are observed
 const callback = function(mutationsList, observer) {
   // Use traditional 'for loops' for IE 11
@@ -41,16 +57,15 @@ const callback = function(mutationsList, observer) {
           danmu.set('ts', ts);
           danmu.set('content', danmaku);
         }
-        try {
-          await danmu.save();
-          console.log('保存弹幕成功。' + danmu.id);
-        } catch (e) {
-          if (e.message.startsWith('A unique field was given a value that is already taken')) {
-            return;
-          }
-          console.log('保存弹幕失败。' + e.message);
-        }
+        unsaved.push(danmu);
       });
+
+      if (unsaved.length >= 20) {
+        batchSave();
+      } else {
+        clearTimeout(timeout);
+        timeout = setTimeout(batchSave, 12E4); // every 5 minutes
+      }
     }
   }
 };

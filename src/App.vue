@@ -1,7 +1,19 @@
 <template lang="pug">
 nav.navbar.navbar-expand-lg.nvabar-dark.bg-dark
   .container
-    .navbar-brand.text-white BB 酱
+    .navbar-brand.text-white.me-5 BB 酱
+    button.navbar-toggler(
+      type="button",
+    )
+      span.navbar-toggler-icon
+
+    #main-navbar.collapse.navbar-collapse
+      ul.navbar-nav.me-auto
+        li.nav-item
+          button.btn.btn-success(
+            type="button",
+            @click="doOpenChoujiang",
+          ) 🎉 抽奖
 
 dialog.modal-content.w-50(
   ref="choujiang",
@@ -34,14 +46,25 @@ dialog.modal-content.w-50(
     button.btn.btn-primary(form="choujiang-form") 抽奖
 
 .container.pt-3
-  .action-bar.d-flex.justify-content-between.mb-3.align-items-center
+  .action-bar.d-flex.mb-3.align-items-center
 
-    button.btn.btn-success(
+    form.align-items-center.d-flex(
+      @submit.prevent="refresh()",
+    )
+      label.w-25(for="search") 搜索
+      input#search.form-control.flex-shrink-1(
+        v-model="search",
+        type="search",
+      )
+
+    button.btn.btn-outline-warning.ms-3(
+      v-if="uname",
       type="button",
-      @click="doOpenChoujiang",
-    ) 🎉 抽奖
+      @click="doClearFilter",
+    ) {{uname}} &nbsp;&nbsp; &times;
 
-    nav
+
+    nav.ms-auto
       ul.pagination.mb-0
         li.page-item(
           :class="{disabled: page === 0 || isLoading}",
@@ -71,9 +94,16 @@ dialog.modal-content.w-50(
       tr
         td.text-center(colspan="4")
           span.spinner-border.spinner-border-sm.my-4
-    tbody(v-if="list.length")
+    tbody(
+      v-if="list.length",
+      @click="doFilter",
+    )
       tr(v-for="item in list")
-        td {{item.uname}}
+        td
+          a(
+            href="#",
+            :data-uid="item.uid",
+          ) {{item.uname}}
         td {{item.content}}
         td
           time.text-muted(:datetime="item.time") {{item.time}}
@@ -99,6 +129,9 @@ export default {
     const endTime = ref('');
     const winner = ref('');
     const choujiang = ref(null);
+    const search = ref('');
+    const filter = {};
+    const uname = ref('');
     const perPage = 20;
 
     async function refresh(createdAt = '', direction) {
@@ -111,8 +144,14 @@ export default {
           query.greaterThan('createdAt', createdAt);
         }
       }
+      if (filter.uid) {
+        query.equalTo('uid', filter.uid);
+      } else if (search.value) {
+        query.contains('uname', search.value);
+      } else {
+        query.exists('uid')
+      }
       query
-        .exists('uid')
         .descending('createdAt')
         .limit(perPage);
       const result = await query.find();
@@ -142,6 +181,22 @@ export default {
       }
       const createdAt = list.value[list.value.length - 1].model.get('createdAt');
       refresh(createdAt, 1);
+    }
+    function doFilter({target}) {
+      if (target.tagName !== 'A') {
+        return;
+      }
+
+      const {uid} = target.dataset;
+      const _uname = target.textContent;
+      filter.uid = uid;
+      uname.value = _uname;
+      refresh();
+    }
+    function doClearFilter() {
+      uname.value = null;
+      filter.uid = null;
+      refresh();
     }
     const doOpenChoujiang = () => {
       if (typeof choujiang.value.showModal === 'function') {
@@ -187,12 +242,17 @@ export default {
       endTime,
       winner,
       choujiang,
+      search,
+      uname,
 
+      refresh,
       doNext,
       doPrev,
       doOpenChoujiang,
       doHideChoujiang,
       doChoujiang,
+      doFilter,
+      doClearFilter,
     };
   },
 };
