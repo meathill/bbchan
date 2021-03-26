@@ -16,6 +16,7 @@ const targetNode = document.getElementById('chat-items');
 const config = { childList: true, subtree: true };
 
 async function batchSave() {
+  clearTimeout(timeout);
   try {
     const total = unsaved.length;
     await AV.Object.saveAll(unsaved);
@@ -60,11 +61,13 @@ const callback = function(mutationsList, observer) {
         unsaved.push(danmu);
       });
 
+      console.log('Unsaved danmu: ' + unsaved.length);
+
       if (unsaved.length >= 20) {
         batchSave();
       } else {
         clearTimeout(timeout);
-        timeout = setTimeout(batchSave, 12E4); // every 5 minutes
+        timeout = setTimeout(batchSave, 12000); // every 2 minutes
       }
     }
   }
