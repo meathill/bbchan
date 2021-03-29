@@ -1,6 +1,7 @@
 import AV from 'leancloud-storage';
 import {LC_APP_ID, LC_APP_SECRET} from "@/config/leancloud";
 import DanMu from "@/model/danmu";
+import {EXTENSION_NAME} from "@/data/constant";
 
 const {forEach} = Array.prototype;
 
@@ -16,12 +17,14 @@ const targetNode = document.getElementById('chat-items');
 const config = { childList: true, subtree: true };
 
 async function batchSave() {
-  clearTimeout(timeout);
   try {
     const total = unsaved.length;
     await AV.Object.saveAll(unsaved);
     console.log('保存' + total + '条弹幕成功。');
     unsaved = unsaved.slice(total);
+    chrome.storage.local.set({
+      danmu: unsaved,
+    });
   } catch (e) {
     if (e.message.startsWith('A unique field was given a value that is already taken')) {
       return;
@@ -31,7 +34,6 @@ async function batchSave() {
 }
 
 let unsaved = [];
-let timeout;
 // Callback function to execute when mutations are observed
 const callback = function(mutationsList, observer) {
   // Use traditional 'for loops' for IE 11
@@ -66,8 +68,9 @@ const callback = function(mutationsList, observer) {
       if (unsaved.length >= 20) {
         batchSave();
       } else {
-        clearTimeout(timeout);
-        timeout = setTimeout(batchSave, 12000); // every 2 minutes
+        chrome.storage.local.set({
+          danmu: unsaved,
+        });
       }
     }
   }
@@ -78,3 +81,15 @@ const observer = new MutationObserver(callback);
 
 // Start observing the target node for configured mutations
 observer.observe(targetNode, config);
+
+chrome.runtime.onMessage.addListener(async (request, sender, response) => {
+  const {name = '', type = ''} = request;
+  console.log('[BBChan] message got: ', name, type);
+  if (name !== EXTENSION_NAME || type !== 'send') {
+    return;
+  }
+  await batchSave();
+  response({
+    message: 'ok',
+  });
+});

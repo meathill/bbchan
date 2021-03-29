@@ -1,5 +1,7 @@
 const {resolve} = require('path');
 const TerserPlugin = require('terser-webpack-plugin');
+const CopyPlugin = require('copy-webpack-plugin');
+
 
 module.exports = {
   entry: {
@@ -30,4 +32,13 @@ module.exports = {
       }),
     ],
   },
+  plugins: [
+    new CopyPlugin({
+      patterns: [
+        {
+          from: 'manifest.json',
+        },
+      ],
+    }),
+  ],
 }

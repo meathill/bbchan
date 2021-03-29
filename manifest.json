@@ -6,7 +6,8 @@
   "permissions": [
     "activeTab",
     "tabs",
-    "alarms"
+    "alarms",
+    "storage"
   ],
   "host_permissions": [
     "https://live.bilibili.com/"
@@ -16,5 +17,8 @@
       "matches": ["https://live.bilibili.com/*"],
       "js": ["content.js"]
     }
-  ]
+  ],
+  "background": {
+    "service_worker": "background.js"
+  }
 }
