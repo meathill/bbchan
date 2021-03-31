@@ -10,6 +10,9 @@ module.exports = {
   parserOptions: {
     parser: 'babel-eslint',
   },
+  globals: {
+    chrome: true,
+  },
   rules: {
     indent: [1, 2, {
       SwitchCase: 1,

@@ -1,6 +1,5 @@
 <template lang="pug">
-.action-bar.d-flex.mb-3.align-items-center
-
+.action-bar.d-flex.mb-3.align-items-center.pt-3
   form.align-items-center.d-flex(
     @submit.prevent="refresh()",
   )
@@ -15,7 +14,6 @@
     type="button",
     @click="doClearFilter",
   ) {{uname}} &nbsp;&nbsp; &times;
-
 
   nav.ms-auto
     ul.pagination.mb-0
@@ -69,8 +67,8 @@ import {
   ref,
   onBeforeMount,
 } from 'vue';
-import {Query} from 'leancloud-storage';
-import {DANMU} from "@/model/danmu";
+import { Query } from 'leancloud-storage';
+import { DANMU } from '@/model/danmu';
 export default {
   setup() {
     const list = ref([]);
@@ -97,14 +95,14 @@ export default {
       } else if (search.value) {
         query.contains('uname', search.value);
       } else {
-        query.exists('uid')
+        query.exists('uid');
       }
       query
         .descending('createdAt')
         .limit(perPage);
       const result = await query.find();
       list.value = result.map(item => {
-        let time = moment(item.get('ts') * 1000).format('Y-M-D H:mm:ss');
+        const time = moment(item.get('ts') * 1000).format('Y-M-D H:mm:ss');
         return {
           ...item.toJSON(),
           id: item.id,
@@ -130,12 +128,12 @@ export default {
       const createdAt = list.value[list.value.length - 1].model.get('createdAt');
       refresh(createdAt, 1);
     }
-    function doFilter({target}) {
+    function doFilter({ target }) {
       if (target.tagName !== 'A') {
         return;
       }
 
-      const {uid} = target.dataset;
+      const { uid } = target.dataset;
       const _uname = target.textContent;
       filter.uid = uid;
       uname.value = _uname;

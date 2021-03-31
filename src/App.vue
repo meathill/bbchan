@@ -49,17 +49,20 @@ dialog.modal-content.w-50(
       | !! 🎉🎉
     button.btn.btn-primary(form="choujiang-form") 抽奖
 
-.container.pt-3
+div(:class="containerStyle")
   router-view
 </template>
 
 <script>
 import {
+  watch,
   ref,
   onBeforeMount,
 } from 'vue';
-import {Query} from 'leancloud-storage';
-import {DANMU} from "@/model/danmu";
+import { useRoute } from 'vue-router';
+import { Query } from 'leancloud-storage';
+import { DANMU } from '@/model/danmu';
+
 export default {
   setup() {
     const isLoading = ref(false);
@@ -67,7 +70,8 @@ export default {
     const endTime = ref('');
     const winner = ref('');
     const choujiang = ref(null);
-
+    const route = useRoute();
+    const containerStyle = ref();
 
     const doOpenChoujiang = () => {
       if (typeof choujiang.value.showModal === 'function') {
@@ -75,14 +79,14 @@ export default {
       } else {
         alert('当前浏览器不支持 `<dialog>`.');
       }
-    }
+    };
     function doHideChoujiang() {
       choujiang.value.open = false;
     }
     async function doChoujiang() {
       const query = new Query(DANMU);
       const start = new Date(startTime.value).getTime() / 1000 >> 0;
-      const end = new Date(endTime.value).getTime() / 1000 >> 0
+      const end = new Date(endTime.value).getTime() / 1000 >> 0;
       query.greaterThanOrEqualTo('ts', start);
       query.lessThanOrEqualTo('ts', end);
       const result = await query.find();
@@ -98,9 +102,15 @@ export default {
       const rand = Math.random() * uniqued.length >> 0;
       winner.value = uniqued[rand].uname;
     }
+    function onRouteChange(name) {
+      containerStyle.value = name && name.startsWith('user.')
+        ? 'w-100 flex-grow-1'
+        : 'container pt-3';
+    }
 
+    watch(() => route.name, onRouteChange);
     onBeforeMount(() => {
-
+      onRouteChange(route.name);
     });
 
     return {
@@ -110,6 +120,7 @@ export default {
       endTime,
       winner,
       choujiang,
+      containerStyle,
 
       doOpenChoujiang,
       doHideChoujiang,

@@ -1,4 +1,4 @@
-import {Object} from 'leancloud-storage';
+import { Object } from 'leancloud-storage';
 
 export const DANMU = 'danmu';
 

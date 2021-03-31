@@ -1,10 +1,10 @@
-const {DefinePlugin} = require('webpack');
+const { DefinePlugin } = require('webpack');
 
 module.exports = {
   pages: {
     index: {
       entry: 'src/main.js',
-      title: "BB 酱",
+      title: 'BB 酱',
     },
   },
   lintOnSave: false,

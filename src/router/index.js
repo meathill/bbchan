@@ -1,4 +1,4 @@
-import {h} from 'vue';
+import { h } from 'vue';
 import {
   createRouter,
   createWebHistory,
@@ -6,6 +6,7 @@ import {
   RouterView,
 } from 'vue-router';
 import DanmuList from '@/module/danmu/views/danmu-list';
+import Login from '@/views/login';
 
 export const routes = [
   {
@@ -22,6 +23,12 @@ export const routes = [
     name: 'danmu',
     component: DanmuList,
   },
+
+  {
+    path: '/login',
+    name: 'user.login',
+    component: Login,
+  },
 ];
 
 const router = createRouter({
@@ -30,9 +37,9 @@ const router = createRouter({
     : createWebHashHistory(),
   scrollBehavior(to) {
     if (to.hash && !/^#/.test(to.hash)) {
-      return {selector: to.hash};
+      return { selector: to.hash };
     }
-    return {top: 0};
+    return { top: 0 };
   },
   routes,
   linkActiveClass: 'active',
