@@ -29,6 +29,11 @@ export const routes = [
     name: 'user.login',
     component: Login,
   },
+  {
+    path: '/logout',
+    name: 'user.logout',
+    component: Login,
+  },
 ];
 
 const router = createRouter({

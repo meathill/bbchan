@@ -21,36 +21,71 @@ main.form-signin
       )
       label(for="password") Password
 
-    .checkbox.mb-3
-      label
-        input.me-2(
-          type="checkbox",
-          value="remember-me",
-        )
-        | Remember me
+    .alert(
+      v-if="message",
+      :class="status ? 'alert-success' : 'alert-danger'",
+    ) {{message}}
 
-    button.w-100.btn.btn-lg.btn-primary Sign in
+    button.w-100.btn.btn-lg.btn-primary(
+      :disabled="isLogging",
+    )
+      span.spinner-border.spinner-border-sm.me-2(
+        v-if="isLogging",
+      )
+      | Sign in
 
   p.mt-5.mb-3.text-muted.text-center BB Chan &copy; 2021
 </template>
 
 <script>
-import { ref } from 'vue';
+import {
+  ref,
+  onMounted,
+} from 'vue';
 import { User } from 'leancloud-storage';
+import { useStore } from 'vuex';
+import { useRoute } from 'vue-router';
+import { SET_CURRENT_USER } from '@/store';
+
 export default {
   setup() {
+    const isLogging = ref(false);
+    const message = ref('');
+    const status = ref();
     const email = ref('');
     const password = ref('');
     const remember = ref(false);
+    const store = useStore();
+    const route = useRoute();
 
     async function doLogin() {
-      const user = await User.loginWithEmail(email.value, password.value);
+      isLogging.value = true;
+      message.value = status.value = null;
+      try {
+        const user = await User.loginWithEmail(email.value, password.value);
+        store.commit(SET_CURRENT_USER, user);
+        status.value = true;
+        message.value = '登录成功';
+      } catch (e) {
+        message.value = '登录失败。' + e.message;
+      }
+      isLogging.value = false;
     }
 
+    onMounted(() => {
+      if (route.name === 'user.logout') {
+
+      }
+    });
+
     return {
+      isLogging,
+
       email,
       password,
       remember,
+      message,
+      status,
 
       doLogin,
     };

@@ -1,6 +1,7 @@
 import { createApp } from 'vue';
 import App from './App.vue';
 import router from '@/router';
+import store from '@/store';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './style/screen.styl';
 import AV from 'leancloud-storage';
@@ -12,4 +13,7 @@ AV.init({
   serverURL: 'https://api.bb.meathill.com',
 });
 
-createApp(App).use(router).mount('#app');
+createApp(App)
+  .use(router)
+  .use(store)
+  .mount('#app');

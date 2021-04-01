@@ -1,5 +1,5 @@
 <template lang="pug">
-nav.navbar.navbar-expand-lg.nvabar-dark.bg-dark
+nav.navbar.navbar-expand-lg.navbar-dark.bg-dark
   .container
     .navbar-brand.text-white.me-5 BB 酱
     button.navbar-toggler(
@@ -12,12 +12,26 @@ nav.navbar.navbar-expand-lg.nvabar-dark.bg-dark
         li.nav-item
           router-link.nav-link(
             :to="{name: 'danmu'}",
-          ) 弹幕
+          ) 弹幕列表
         li.nav-item
           button.btn.btn-success(
             type="button",
             @click="doOpenChoujiang",
           ) 🎉 抽奖
+
+      ul.navbar-nav.mb-auto
+        li.nav-item(
+          v-if="currentUser",
+        )
+          router-link.nav-link(
+            :to="{name: 'user.logout'}",
+          ) {{currentUser}}
+        li.nav-item(
+          v-else,
+        )
+          router-link.nav-link(
+            :to="{name: 'user.login'}",
+          ) Login
 
 dialog.modal-content.w-50(
   ref="choujiang",
@@ -57,9 +71,10 @@ div(:class="containerStyle")
 import {
   watch,
   ref,
-  onBeforeMount,
+  onBeforeMount, computed,
 } from 'vue';
 import { useRoute } from 'vue-router';
+import { useStore } from 'vuex';
 import { Query } from 'leancloud-storage';
 import { DANMU } from '@/model/danmu';
 
@@ -71,7 +86,13 @@ export default {
     const winner = ref('');
     const choujiang = ref(null);
     const route = useRoute();
+    const store = useStore();
     const containerStyle = ref();
+
+    const currentUser = computed(() => {
+      return store.state.currentUser && store.state.currentUser.email ||
+        '';
+    });
 
     const doOpenChoujiang = () => {
       if (typeof choujiang.value.showModal === 'function') {
@@ -121,6 +142,7 @@ export default {
       winner,
       choujiang,
       containerStyle,
+      currentUser,
 
       doOpenChoujiang,
       doHideChoujiang,

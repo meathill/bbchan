@@ -48,8 +48,7 @@ const callback = function(mutationsList, observer) {
       const { addedNodes } = mutation;
       forEach.call(addedNodes, async node => {
         const { classList } = node;
-        if (!classList.contains('chat-item') ||
-            (!classList.contains('important-prompt-item') && !classList.contains('danmaku-item'))) {
+        if (!classList.contains('chat-item') || !classList.contains('danmaku-item')) {
           return;
         }
 
@@ -58,6 +57,7 @@ const callback = function(mutationsList, observer) {
           danmu.set('type', '通知');
           danmu.set('content', node.textContent);
         } else if (classList.contains('danmaku-item')) {
+          let vip = node.getElementsByClassName('anchor-icon');
           let { uid, uname, ts, danmaku } = node.dataset;
           ts = ts === '0' ? Date.now() / 1000 >> 0 : Number(ts);
           danmu.set('type', '弹幕');
@@ -66,6 +66,10 @@ const callback = function(mutationsList, observer) {
           danmu.set('ts', ts);
           danmu.set('content', danmaku);
           danmu.set('room', roomID);
+          if (vip.length) {
+            ([vip] = vip);
+            danmu.vip = vip.textContent;
+          }
         }
         unsaved.push(danmu);
       });
