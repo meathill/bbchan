@@ -44,7 +44,7 @@ import {
 } from 'vue';
 import { User } from 'leancloud-storage';
 import { useStore } from 'vuex';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { SET_CURRENT_USER } from '@/store';
 
 export default {
@@ -57,6 +57,7 @@ export default {
     const remember = ref(false);
     const store = useStore();
     const route = useRoute();
+    const router = useRouter();
 
     async function doLogin() {
       isLogging.value = true;
@@ -66,6 +67,9 @@ export default {
         store.commit(SET_CURRENT_USER, user);
         status.value = true;
         message.value = '登录成功';
+        if (store.state.accessFrom) {
+          router.replace(store.state.accessFrom);
+        }
       } catch (e) {
         message.value = '登录失败。' + e.message;
       }

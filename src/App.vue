@@ -14,54 +14,33 @@ nav.navbar.navbar-expand-lg.navbar-dark.bg-dark
             :to="{name: 'danmu'}",
           ) 弹幕列表
         li.nav-item
-          button.btn.btn-success(
-            type="button",
-            @click="doOpenChoujiang",
+          router-link.nav-link(
+            :to="{name: 'lucky.list'}",
           ) 🎉 抽奖
 
       ul.navbar-nav.mb-auto
-        li.nav-item(
+        li.nav-item.dropdown(
           v-if="currentUser",
         )
-          router-link.nav-link(
-            :to="{name: 'user.logout'}",
+          input#user-dropdown.dropdown-toggle-checkbox(
+            type="checkbox",
+            hidden,
+          )
+          label.nav-link.dropdown-toggle(
+            for="user-dropdown",
+            role="button",
           ) {{currentUser}}
+          ul.dropdown-menu
+            li
+              router-link.dropdown-item(
+                :to="{name: 'user.logout'}",
+              ) 登出
         li.nav-item(
           v-else,
         )
           router-link.nav-link(
             :to="{name: 'user.login'}",
           ) Login
-
-dialog.modal-content.w-50(
-  ref="choujiang",
-)
-  header.modal-header
-    h5.modal-title 开始抽奖
-    button.btn-close(type="button", @click="doHideChoujiang")
-  form#choujiang-form.modal-body(
-    @submit.prevent="doChoujiang",
-  )
-    .form-group
-      label.form-label(for="start-time") 开始时间
-      input#start-time.form-control(
-        type="datetime-local",
-        v-model="startTime",
-        required,
-      )
-    .form-group
-      label.form-label(for="end-time") 开始时间
-      input#end-time.form-control(
-        type="datetime-local",
-        v-model="endTime",
-        required,
-      )
-
-  .modal-footer
-    .alert.alert-success.text-center.py-2(v-if="winner") 🎉🎉 恭喜：
-      strong {{winner}}
-      | !! 🎉🎉
-    button.btn.btn-primary(form="choujiang-form") 抽奖
 
 div(:class="containerStyle")
   router-view
@@ -73,19 +52,16 @@ import {
   ref,
   onBeforeMount, computed,
 } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter} from 'vue-router';
 import { useStore } from 'vuex';
-import { Query } from 'leancloud-storage';
-import { DANMU } from '@/model/danmu';
+import {User} from 'leancloud-storage';
+import {SET_ACCESS_FROM, SET_CURRENT_USER} from "@/store";
 
 export default {
   setup() {
     const isLoading = ref(false);
-    const startTime = ref('');
-    const endTime = ref('');
-    const winner = ref('');
-    const choujiang = ref(null);
     const route = useRoute();
+    const router = useRouter();
     const store = useStore();
     const containerStyle = ref();
 
@@ -94,35 +70,6 @@ export default {
         '';
     });
 
-    const doOpenChoujiang = () => {
-      if (typeof choujiang.value.showModal === 'function') {
-        choujiang.value.showModal();
-      } else {
-        alert('当前浏览器不支持 `<dialog>`.');
-      }
-    };
-    function doHideChoujiang() {
-      choujiang.value.open = false;
-    }
-    async function doChoujiang() {
-      const query = new Query(DANMU);
-      const start = new Date(startTime.value).getTime() / 1000 >> 0;
-      const end = new Date(endTime.value).getTime() / 1000 >> 0;
-      query.greaterThanOrEqualTo('ts', start);
-      query.lessThanOrEqualTo('ts', end);
-      const result = await query.find();
-      let uniqued = result.reduce((memo, item) => {
-        const uid = item.get('uid');
-        if (memo[uid]) {
-          return memo;
-        }
-        memo[uid] = item.toJSON();
-        return memo;
-      }, {});
-      uniqued = Object.values(uniqued);
-      const rand = Math.random() * uniqued.length >> 0;
-      winner.value = uniqued[rand].uname;
-    }
     function onRouteChange(name) {
       containerStyle.value = name && name.startsWith('user.')
         ? 'w-100 flex-grow-1'
@@ -132,21 +79,29 @@ export default {
     watch(() => route.name, onRouteChange);
     onBeforeMount(() => {
       onRouteChange(route.name);
+
+      const user = User.current();
+      if (user) {
+        store.commit(SET_CURRENT_USER, user);
+      } else {
+        const {name, params, query, hash} = route;
+        store.commit(SET_ACCESS_FROM, {
+          name,
+          params,
+          query,
+          hash,
+        });
+        router.replace({
+          name: 'user.login',
+        });
+      }
     });
 
     return {
       isLoading,
 
-      startTime,
-      endTime,
-      winner,
-      choujiang,
       containerStyle,
       currentUser,
-
-      doOpenChoujiang,
-      doHideChoujiang,
-      doChoujiang,
     };
   },
 };

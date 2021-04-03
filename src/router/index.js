@@ -7,6 +7,7 @@ import {
 } from 'vue-router';
 import DanmuList from '@/module/danmu/views/danmu-list';
 import Login from '@/views/login';
+import Lucky from '@/module/lucky/router';
 
 export const routes = [
   {
@@ -23,6 +24,7 @@ export const routes = [
     name: 'danmu',
     component: DanmuList,
   },
+  Lucky,
 
   {
     path: '/login',
