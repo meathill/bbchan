@@ -32,13 +32,12 @@
 </template>
 
 <script>
-import {Query} from "leancloud-storage";
-import {DANMU} from "@/model/danmu";
-import {ref} from "vue";
+import { Query } from 'leancloud-storage';
+import { DANMU } from '@/model/danmu';
+import { ref } from 'vue';
 
 export default {
   setup() {
-
     const startTime = ref('');
     const endTime = ref('');
     const winner = ref('');
@@ -73,6 +72,6 @@ export default {
       const rand = Math.random() * uniqued.length >> 0;
       winner.value = uniqued[rand].uname;
     }
-  }
-}
+  },
+};
 </script>

@@ -69,6 +69,10 @@ export default {
         message.value = '登录成功';
         if (store.state.accessFrom) {
           router.replace(store.state.accessFrom);
+        } else {
+          router.replace({
+            name: 'danmu',
+          });
         }
       } catch (e) {
         message.value = '登录失败。' + e.message;

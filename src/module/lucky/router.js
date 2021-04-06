@@ -1,4 +1,4 @@
-import List from './views/list';
+import List from './views/lucky-list';
 
 export default {
   path: '/lucky',

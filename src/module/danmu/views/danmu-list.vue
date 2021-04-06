@@ -5,7 +5,7 @@
   )
     label.w-25(for="search") 搜索
     input#search.form-control.flex-shrink-1(
-      v-model="search",
+      v-model="filter.search",
       type="search",
     )
 
@@ -62,86 +62,49 @@ table.table.table-bordered
 </template>
 
 <script>
-import moment from 'moment';
 import {
   ref,
   onBeforeMount,
 } from 'vue';
-import { Query } from 'leancloud-storage';
-import { DANMU } from '@/model/danmu';
+import createList from '@/mixins/list';
+import moment from "moment";
+import {DANMU} from "@/model/danmu";
+
 export default {
   setup() {
-    const list = ref([]);
-    const isLoading = ref(false);
-    const page = ref(0);
-    const hasNext = ref(false);
-    const search = ref('');
-    const filter = {};
     const uname = ref('');
-    const perPage = 20;
-
-    async function refresh(createdAt = '', direction) {
-      isLoading.value = true;
-      const query = new Query(DANMU);
-      if (createdAt) {
-        if (direction) {
-          query.lessThan('createdAt', createdAt);
-        } else {
-          query.greaterThan('createdAt', createdAt);
-        }
-      }
-      if (filter.uid) {
-        query.equalTo('uid', filter.uid);
-      } else if (search.value) {
-        query.contains('uname', search.value);
-      } else {
-        query.exists('uid');
-      }
-      query
-        .descending('createdAt')
-        .limit(perPage);
-      const result = await query.find();
-      list.value = result.map(item => {
-        const time = moment(item.get('ts') * 1000).format('Y-M-D H:mm:ss');
-        return {
-          ...item.toJSON(),
-          id: item.id,
-          model: item,
-          time,
-        };
-      });
-      hasNext.value = result.length >= perPage;
-      isLoading.value = false;
+    function rowFormatter(item) {
+      const time = moment(item.get('ts') * 1000).format('Y-M-D H:mm:ss');
+      return {
+        ...item.toJSON(),
+        id: item.id,
+        model: item,
+        time,
+      };
     }
 
-    function doPrev() {
-      if (page.value > 0) {
-        page.value = page.value - 1;
-      }
-      const createdAt = list.value[0].model.get('createdAt');
-      refresh(createdAt, 0);
-    }
-    function doNext() {
-      if (hasNext.value) {
-        page.value = page.value + 1;
-      }
-      const createdAt = list.value[list.value.length - 1].model.get('createdAt');
-      refresh(createdAt, 1);
-    }
-    function doFilter({ target }) {
+    const listFunctions = createList({
+      rowFormatter,
+      model: DANMU,
+      searchKey: 'uname',
+    });
+    const {refresh, filter} = listFunctions;
+    function doFilter(event) {
+      const { target } = event;
+      event.preventDefault();
       if (target.tagName !== 'A') {
         return;
       }
 
       const { uid } = target.dataset;
       const _uname = target.textContent;
-      filter.uid = uid;
+      filter.column.uid = uid;
       uname.value = _uname;
       refresh();
     }
     function doClearFilter() {
-      uname.value = null;
-      filter.uid = null;
+      filter.column = null;
+      uname.value = '';
       refresh();
     }
 
@@ -150,17 +113,8 @@ export default {
     });
 
     return {
-      isLoading,
-
-      page,
-      hasNext,
-      list,
-      search,
+      ...listFunctions,
       uname,
-
-      refresh,
-      doNext,
-      doPrev,
       doFilter,
       doClearFilter,
     };

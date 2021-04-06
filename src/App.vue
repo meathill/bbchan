@@ -7,7 +7,9 @@ nav.navbar.navbar-expand-lg.navbar-dark.bg-dark
     )
       span.navbar-toggler-icon
 
-    #main-navbar.collapse.navbar-collapse
+    #main-navbar.collapse.navbar-collapse(
+      v-if="currentUser",
+    )
       ul.navbar-nav.me-auto
         li.nav-item
           router-link.nav-link(
@@ -52,10 +54,10 @@ import {
   ref,
   onBeforeMount, computed,
 } from 'vue';
-import { useRoute, useRouter} from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { useStore } from 'vuex';
-import {User} from 'leancloud-storage';
-import {SET_ACCESS_FROM, SET_CURRENT_USER} from "@/store";
+import { User } from 'leancloud-storage';
+import { SET_ACCESS_FROM, SET_CURRENT_USER } from '@/store';
 
 export default {
   setup() {
@@ -84,7 +86,7 @@ export default {
       if (user) {
         store.commit(SET_CURRENT_USER, user);
       } else {
-        const {name, params, query, hash} = route;
+        const { name, params, query, hash } = route;
         store.commit(SET_ACCESS_FROM, {
           name,
           params,
