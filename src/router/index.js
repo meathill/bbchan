@@ -24,7 +24,7 @@ export const routes = [
     name: 'danmu',
     component: DanmuList,
   },
-  Lucky,
+  ...Lucky,
 
   {
     path: '/login',

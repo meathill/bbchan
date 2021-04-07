@@ -66,7 +66,7 @@ import {
   ref,
   onBeforeMount,
 } from 'vue';
-import createList from '@/mixins/list';
+import useList from '@/use/list';
 import moment from "moment";
 import {DANMU} from "@/model/danmu";
 
@@ -83,7 +83,7 @@ export default {
       };
     }
 
-    const listFunctions = createList({
+    const listFunctions = useList({
       rowFormatter,
       model: DANMU,
       searchKey: 'uname',

@@ -4,7 +4,7 @@ import {reactive, ref} from "vue";
 
 const perPage = 20;
 
-export default function createList({
+export default function useList({
   model,
   rowFormatter,
   searchKey,
