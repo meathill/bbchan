@@ -67,8 +67,8 @@ import {
   onBeforeMount,
 } from 'vue';
 import useList from '@/use/list';
-import moment from "moment";
-import {DANMU} from "@/model/danmu";
+import moment from 'moment';
+import { DANMU } from '@/model/danmu';
 
 export default {
   setup() {
@@ -88,7 +88,7 @@ export default {
       model: DANMU,
       searchKey: 'uname',
     });
-    const {refresh, filter} = listFunctions;
+    const { refresh, filter } = listFunctions;
     function doFilter(event) {
       const { target } = event;
       event.preventDefault();

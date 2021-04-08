@@ -65,9 +65,9 @@ table.table.table-bordered
 import {
   onBeforeMount,
 } from 'vue';
-import useList from "@/use/list";
-import Lucky from "@/model/lucky";
-import moment from "moment";
+import useList from '@/use/list';
+import Lucky from '@/model/lucky';
+import moment from 'moment';
 
 export default {
   setup() {
@@ -86,7 +86,7 @@ export default {
       rowFormatter: formatter,
       searchKey: 'name',
     });
-    const {refresh} = listFunctions;
+    const { refresh } = listFunctions;
 
     onBeforeMount(refresh);
 

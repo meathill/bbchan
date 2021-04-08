@@ -1,6 +1,6 @@
 import each from 'lodash/each';
 import { Query } from 'leancloud-storage';
-import {reactive, ref} from "vue";
+import { reactive, ref } from 'vue';
 
 const perPage = 20;
 
