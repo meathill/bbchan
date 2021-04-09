@@ -1,8 +1,7 @@
 {
-  "name": "awesome-blank",
-  "description": "This is an awesome blank page to share links.",
+  "name": "bb-chan",
+  "description": "A extension for live streaming on Bilibili.com",
   "version": "0.1.0",
-  "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
     "build:ui": "vue-cli-service build",

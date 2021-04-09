@@ -39,12 +39,17 @@
 table.table.table-bordered
   thead
     tr
-      th 用户名
-      th 弹幕
-      th 时间
+      th ID
+      th 活动名称
+      th 活动简介
+      th 持续时间
+      th 弹幕内容
+      th 奖品
+      th 状态
+      th 其它
   tbody(v-if="isLoading")
     tr
-      td.text-center(colspan="4")
+      td.text-center(colspan="8")
         span.spinner-border.spinner-border-sm.my-4
   tbody(
     v-if="list.length",
@@ -52,13 +57,27 @@ table.table.table-bordered
   )
     tr(v-for="item in list")
       td
-        a(
-          href="#",
-          :data-uid="item.uid",
-        ) {{item.uname}}
-      td {{item.content}}
+        small {{item.id}}
       td
-        time.text-muted(:datetime="item.time") {{item.time}}
+        router-link(
+          :to="{name: 'lucky.edit', params: {id: item.id}}",
+        ) {{item.name}}
+      td
+        small {{item.description}}
+      td
+        small
+          time.text-muted(:datetime="item.startTime") {{item.startTime}}
+        br
+        small
+          time.text-muted(:datetime="item.endTime") {{item.endTime}}
+      td
+        blockquote {{item.content}}
+      td {{item.prize}} ( x
+        strong.me-1 {{item.number}}
+        | )
+      td
+        span.badge.fs-6(:class="item.statusClass") {{item.status}}
+      td
 </template>
 
 <script>
@@ -66,18 +85,36 @@ import {
   onBeforeMount,
 } from 'vue';
 import useList from '@/use/list';
-import Lucky from '@/model/lucky';
+import Lucky, {
+  STATUS_COMPLETED,
+  STATUS_LABEL,
+  STATUS_NORMAL,
+} from '@/model/lucky';
 import moment from 'moment';
+import { TIME } from '@/data/constant';
 
 export default {
   setup() {
     function formatter(item) {
-      const time = moment(item.get('ts') * 1000).format('Y-M-D H:mm:ss');
+      const json = item.toJSON();
+      let {
+        startTime,
+        endTime,
+        status,
+      } = json;
+      startTime = moment(startTime).format(TIME);
+      endTime = moment(endTime).format(TIME);
+      const statusClass = status === STATUS_NORMAL
+        ? 'bg-info'
+        : (status === STATUS_COMPLETED) ? 'bg-success' : 'bg-muted';
+      status = STATUS_LABEL[status];
       return {
-        ...item.toJSON(),
+        ...json,
         id: item.id,
-        model: item,
-        time,
+        startTime,
+        endTime,
+        status,
+        statusClass,
       };
     }
 
