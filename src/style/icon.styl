@@ -9,7 +9,7 @@
     content ''
     width 1em
 
-for $icon in check-circle-fill exclamation-circle-fill plus
+for $icon in check-circle-fill exclamation-circle-fill plus x-circle check-circle-fill
   $path = '../../node_modules/bootstrap-icons/icons/' + $icon + '.svg'
   .bi-{$icon}
     mask-image url($path)

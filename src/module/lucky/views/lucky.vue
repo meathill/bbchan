@@ -75,7 +75,7 @@ h2.lucky-editor.border-bottom.pb-3.mb-3 创建弹幕抽奖活动 🎉
         )
         label.form-check-label(for="lucky-only-once") 每个人只有一次机会
 
-      .mb-3.form-check
+      .mb-3.form-check(hidden)
         input#lucky-auto.form-check-input(
           type="checkbox",
           v-model="formData.auto",
@@ -95,22 +95,23 @@ h2.lucky-editor.border-bottom.pb-3.mb-3 创建弹幕抽奖活动 🎉
       | 创建抽奖
 
   .col(v-if="!isNew")
-    .card.mb-3
-      .card-header 状态
-      .card-body {{formData.status}}
+    .input-group.input-group-lg.mb-3
+      .input-group-text 状态
+      .input-group-text.bg-white(
+        :class="formData.statusClass",
+      ) {{formData.statusLabel}}
 
-    .d-flex
-      button.btn.btn-danger(
-        type="button",
-      )
-        i.bi.bi-x.me-2
-        | 取消抽奖
+    .d-flex(v-if="formData.status === STATUS_NORMAL")
+      spin-button.btn.btn-danger(
+        icon="bi-x-circle",
+        @click="doCancel",
+        :is-spinning="isSubmitting",
+      ) 取消抽奖
 
-      button.btn.btn-success.ms-3(
-        type="button",
-      )
-        i.bi.bi-check.me-2
-        | 立即开奖
+      spin-button.btn.btn-success.ms-3(
+        icon="bi-check-circle-fill",
+        :is-spinning="isSubmitting",
+      ) 立即开奖
 </template>
 
 <script>
@@ -125,9 +126,15 @@ import {
 } from 'vue';
 import { useStore } from 'vuex';
 import { useRoute, useRouter } from 'vue-router';
-import Lucky, { STATUS_NORMAL } from '@/model/lucky';
+import Lucky, {
+  STATUS_NORMAL,
+  STATUS_CANCELED,
+  formatLuck,
+} from '@/model/lucky';
+import SpinButton from "@/component/spin-button";
 
 export default {
+  components: {SpinButton},
   props: {
     model: {
       type: Object,
@@ -149,6 +156,7 @@ export default {
     const store = useStore();
     const route = useRoute();
     const router = useRouter();
+    let luckyModel;
 
     const isNew = computed(() => {
       return !route.params.id;
@@ -178,6 +186,7 @@ export default {
 
       try {
         await lucky.save();
+        luckyModel = lucky;
       } catch (e) {
         message.value = '保存抽奖活动失败。' + e.message;
         isSubmitting.value = false;
@@ -196,6 +205,18 @@ export default {
       }
       isSubmitting.value = false;
     }
+    async function doCancel() {
+      isSubmitting.value = true;
+      message.value = status.value = null;
+      luckyModel.set('status', STATUS_CANCELED);
+      try {
+        await luckyModel.save();
+        assign(formData, formatLuck(luckyModel));
+      } catch (e) {
+        message.value = '取消抽奖失败。' + e.message;
+      }
+      isSubmitting.value = false;
+    }
 
     onBeforeMount(async() => {
       let { model } = props;
@@ -204,22 +225,19 @@ export default {
         try {
           model = Object.createWithoutData(Lucky, id);
           await model.fetch();
+          luckyModel = model;
         } catch (e) {
+          console.error(e);
           message.value = '获取对象失败。' + e.message;
           return;
         }
       }
-      const {
-        objectId,
-        createdAt,
-        updatedAt,
-        owner,
-        ...json
-      } = model.toJSON();
-      assign(formData, json);
+      assign(formData, formatLuck(model));
     });
 
     return {
+      STATUS_NORMAL,
+
       isSubmitting,
       isNew,
 
@@ -229,6 +247,7 @@ export default {
       formData,
 
       doSubmit,
+      doCancel,
     };
   },
 };
