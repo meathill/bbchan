@@ -97,7 +97,7 @@ h2.lucky-editor.border-bottom.pb-3.mb-3 创建弹幕抽奖活动 🎉
   .col(v-if="!isNew")
     .input-group.input-group-lg.mb-3
       .input-group-text 状态
-      .input-group-text.bg-white(
+      .input-group-text.bg-white.flex-grow-1(
         :class="formData.statusClass",
       ) {{formData.statusLabel}}
 
@@ -110,6 +110,7 @@ h2.lucky-editor.border-bottom.pb-3.mb-3 创建弹幕抽奖活动 🎉
 
       spin-button.btn.btn-success.ms-3(
         icon="bi-check-circle-fill",
+        @click="doDraw",
         :is-spinning="isSubmitting",
       ) 立即开奖
 </template>
@@ -117,7 +118,7 @@ h2.lucky-editor.border-bottom.pb-3.mb-3 创建弹幕抽奖活动 🎉
 <script>
 import assign from 'lodash/assign';
 import each from 'lodash/each';
-import { ACL, Object } from 'leancloud-storage';
+import { ACL, Cloud, Object } from 'leancloud-storage';
 import {
   computed,
   ref,
@@ -129,6 +130,7 @@ import { useRoute, useRouter } from 'vue-router';
 import Lucky, {
   STATUS_NORMAL,
   STATUS_CANCELED,
+  STATUS_COMPLETED,
   formatLuck,
 } from '@/model/lucky';
 import SpinButton from "@/component/spin-button";
@@ -146,13 +148,15 @@ export default {
     const formData = reactive({
       onlyOnce: true,
       strict: true,
-      auto: true,
+      auto: false,
       number: 1,
+      status: 0,
     });
     const isSubmitting = ref(false);
     const status = ref(false);
     const message = ref('');
     const form = ref(null);
+    const winners = ref(null);
     const store = useStore();
     const route = useRoute();
     const router = useRouter();
@@ -165,6 +169,12 @@ export default {
       return store.state.currentUser.model;
     });
 
+    async function doDraw() {
+      isSubmitting.value = true;
+      const _winners = await Cloud.run('drawWinner');
+      winners.value = _winners;
+      isSubmitting.value = false;
+    }
     async function doSubmit() {
       if (form.value.matches(':invalid') || !isNew.value) {
         return;
@@ -174,6 +184,9 @@ export default {
       status.value = message.value = null;
       const lucky = new Lucky();
       each(formData, (value, key) => {
+        if (key === 'number') {
+          value = Number(value);
+        }
         lucky.set(key, value);
       });
       const acl = new ACL();
@@ -221,7 +234,7 @@ export default {
     onBeforeMount(async() => {
       let { model } = props;
       const { id } = route.params;
-      if (!model) {
+      if (!model && id) {
         try {
           model = Object.createWithoutData(Lucky, id);
           await model.fetch();
@@ -245,9 +258,11 @@ export default {
       message,
       form,
       formData,
+      winners,
 
       doSubmit,
       doCancel,
+      doDraw,
     };
   },
 };
