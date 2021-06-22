@@ -1,5 +1,14 @@
 <template lang="pug">
-h2.lucky-editor.border-bottom.pb-3.mb-3 创建弹幕抽奖活动 🎉
+nav(aria-label="breadcrumb")
+  ol.breadcrumb
+    li.breadcrumb-item
+      router-link(
+        :to="{name: 'lucky.list'}",
+      ) 全部抽奖
+    li.breadcrumb-item.active 创建弹幕抽奖活动 🎉
+
+hr
+
 .row
   form#choujiang-form.col(
     ref="form",
@@ -44,6 +53,7 @@ h2.lucky-editor.border-bottom.pb-3.mb-3 创建弹幕抽奖活动 🎉
           placeholder="即发什么弹幕才能抽奖",
           :required="formData.strict",
         )
+        .form-text 留空则任何留言均可得奖
 
       .row.mb-3
         .col-9
@@ -171,8 +181,19 @@ export default {
 
     async function doDraw() {
       isSubmitting.value = true;
-      const _winners = await Cloud.run('drawWinner');
-      winners.value = _winners;
+      message.value = status.value = null;
+      try {
+        const result = await Cloud.run('drawWinner', {
+          luckyId: route.params.id,
+        });
+        if (result.status) {
+          message.value = '抽奖失败。' + result.message;
+        } else {
+          winners.value = result.winners;
+        }
+      } catch (e) {
+        message.value = '抽奖失败。' + e.message;
+      }
       isSubmitting.value = false;
     }
     async function doSubmit() {
