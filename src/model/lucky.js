@@ -24,11 +24,7 @@ export function formatLuck(model) {
     owner,
     ...json
   } = model.toJSON();
-  return {
-    ...json,
-    statusLabel: STATUS_LABEL[json.status],
-    statusClass: STATUS_STYLE[json.status],
-  };
+  return json;
 }
 
 class Lucky extends Object {

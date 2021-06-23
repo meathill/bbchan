@@ -22,6 +22,15 @@ hr
           required,
         )
 
+      .mb-3.w-50
+        label.form-label(for="room-id") 房间号
+        select#room-id.form-control(
+          v-model="formData.roomId",
+          required,
+        )
+          option(disabled, value='') == 请选择 ==
+          option(v-for="room of rooms", :value="room") {{room}}
+
       .mb-3
         label.form-label(for="description") 活动简介
         textarea#description.form-control(
@@ -53,7 +62,7 @@ hr
           placeholder="即发什么弹幕才能抽奖",
           :required="formData.strict",
         )
-        .form-text 留空则任何留言均可得奖
+        .form-text 留空则任何弹幕均有机会得奖
 
       .row.mb-3
         .col-9
@@ -108,8 +117,8 @@ hr
     .input-group.input-group-lg.mb-3
       .input-group-text 状态
       .input-group-text.bg-white.flex-grow-1(
-        :class="formData.statusClass",
-      ) {{formData.statusLabel}}
+        :class="statusClass",
+      ) {{statusLabel}}
 
     .d-flex(v-if="formData.status === STATUS_NORMAL")
       spin-button.btn.btn-danger(
@@ -123,12 +132,25 @@ hr
         @click="doDraw",
         :is-spinning="isSubmitting",
       ) 立即开奖
+
+    table.table.table-bordered.mt-3
+      caption 中奖名单
+      thead
+        tr
+          th ID
+          th 昵称
+          th 内容
+      tbody
+        tr(v-for="winner of winners")
+          td {{winner.objectId}}
+          td {{winner.uname}} （{{winner.uid}}）
+          td {{winner.content}}
 </template>
 
 <script>
 import assign from 'lodash/assign';
 import each from 'lodash/each';
-import { ACL, Cloud, Object } from 'leancloud-storage';
+import { ACL, Cloud, Object, Query } from 'leancloud-storage';
 import {
   computed,
   ref,
@@ -141,7 +163,7 @@ import Lucky, {
   STATUS_NORMAL,
   STATUS_CANCELED,
   STATUS_COMPLETED,
-  formatLuck,
+  formatLuck, STATUS_LABEL, STATUS_STYLE,
 } from '@/model/lucky';
 import SpinButton from "@/component/spin-button";
 
@@ -178,6 +200,16 @@ export default {
     const currentUser = computed(() => {
       return store.state.currentUser.model;
     });
+    const rooms = computed(() => {
+      console.log(store.state.currentUser);
+      return store.state.currentUser.model.get('rooms');
+    });
+    const statusLabel = computed(() => {
+      return STATUS_LABEL[formData.status];
+    });
+    const statusClass = computed(() => {
+      return STATUS_STYLE[formData.status];
+    });
 
     async function doDraw() {
       isSubmitting.value = true;
@@ -190,6 +222,7 @@ export default {
           message.value = '抽奖失败。' + result.message;
         } else {
           winners.value = result.winners;
+          formData.status = STATUS_COMPLETED;
         }
       } catch (e) {
         message.value = '抽奖失败。' + e.message;
@@ -257,8 +290,9 @@ export default {
       const { id } = route.params;
       if (!model && id) {
         try {
-          model = Object.createWithoutData(Lucky, id);
-          await model.fetch();
+          const query = new Query(Lucky);
+          query.include('winners');
+          model = await query.get(id);
           luckyModel = model;
         } catch (e) {
           console.error(e);
@@ -267,6 +301,7 @@ export default {
         }
       }
       assign(formData, formatLuck(model));
+      winners.value = formData.winners;
     });
 
     return {
@@ -280,6 +315,9 @@ export default {
       form,
       formData,
       winners,
+      rooms,
+      statusLabel,
+      statusClass,
 
       doSubmit,
       doCancel,
