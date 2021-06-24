@@ -9,12 +9,6 @@
       type="search",
     )
 
-  button.btn.btn-outline-warning.ms-3(
-    v-if="uname",
-    type="button",
-    @click="doClearFilter",
-  ) {{uname}} &nbsp;&nbsp; &times;
-
   nav.ms-auto
     ul.pagination.mb-0
       li.page-item(
@@ -59,56 +53,37 @@ table.table.table-bordered
       td {{item.content}}
       td
         time.text-muted(:datetime="item.time") {{item.time}}
+
 </template>
 
-<script>
+<script setup>
 import {
   ref,
   onBeforeMount,
 } from 'vue';
 import useList from '@/use/list';
-import { DANMU } from '@/model/danmu';
 import { rowItemFormatter } from '@/utils/format';
 
-export default {
-  setup() {
-    const uname = ref('');
+const username = ref('');
 
-    const listFunctions = useList({
-      rowFormatter: rowItemFormatter,
-      model: DANMU,
-      searchKey: 'uname',
-    });
-    const { refresh, filter } = listFunctions;
-    function doFilter(event) {
-      const { target } = event;
-      event.preventDefault();
-      if (target.tagName !== 'A') {
-        return;
-      }
+const listFunctions = useList({
+  rowFormatter: rowItemFormatter,
+  model: '_User',
+  searchKey: 'username',
+});
+const {
+  list,
+  isLoading,
+  hasNext,
+  filter,
+  page,
 
-      const { uid } = target.dataset;
-      const _uname = target.textContent;
-      filter.column.uid = uid;
-      uname.value = _uname;
-      refresh();
-    }
-    function doClearFilter() {
-      filter.column = null;
-      uname.value = '';
-      refresh();
-    }
+  refresh,
+  doPrev,
+  doNext,
+} = listFunctions;
 
-    onBeforeMount(() => {
-      refresh();
-    });
-
-    return {
-      ...listFunctions,
-      uname,
-      doFilter,
-      doClearFilter,
-    };
-  },
-};
+onBeforeMount(() => {
+  refresh();
+});
 </script>

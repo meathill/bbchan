@@ -8,6 +8,7 @@ import {
 import DanmuList from '@/module/danmu/views/danmu-list';
 import Login from '@/views/login';
 import Lucky from '@/module/lucky/router';
+import User from '@/module/user/router';
 
 export const routes = [
   {
@@ -25,6 +26,7 @@ export const routes = [
     component: DanmuList,
   },
   ...Lucky,
+  ...User,
 
   {
     path: '/login',

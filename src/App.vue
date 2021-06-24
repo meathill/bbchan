@@ -14,11 +14,19 @@ nav.navbar.navbar-expand-lg.navbar-dark.bg-dark
         li.nav-item
           router-link.nav-link(
             :to="{name: 'danmu'}",
-          ) 弹幕列表
+          )
+            i.bi.bi-chat-left-text-fill.me-2
+            | 弹幕列表
         li.nav-item
           router-link.nav-link(
             :to="{name: 'lucky.list'}",
           ) 🎉 抽奖
+        li.nav-item
+          router-link.nav-link(
+            :to="{name: 'user.list'}",
+          )
+            i.bi.bi-people-fill.me-2
+            | 用户管理
 
       ul.navbar-nav.mb-auto
         li.nav-item.dropdown(

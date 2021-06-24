@@ -14,9 +14,12 @@ export const STATUS_STYLE = {
   [STATUS_NORMAL]: 'text-primary fw-bold fs-5',
   [STATUS_CANCELED]: 'text-muted',
   [STATUS_COMPLETED]: 'text-success',
-}
+};
 
 export function formatLuck(model) {
+  if (!model) {
+    return null;
+  }
   const {
     objectId,
     createdAt,

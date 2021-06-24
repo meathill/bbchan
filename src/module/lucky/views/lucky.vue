@@ -163,12 +163,14 @@ import Lucky, {
   STATUS_NORMAL,
   STATUS_CANCELED,
   STATUS_COMPLETED,
-  formatLuck, STATUS_LABEL, STATUS_STYLE,
+  formatLuck,
+  STATUS_LABEL,
+  STATUS_STYLE,
 } from '@/model/lucky';
-import SpinButton from "@/component/spin-button";
+import SpinButton from '@/component/spin-button';
 
 export default {
-  components: {SpinButton},
+  components: { SpinButton },
   props: {
     model: {
       type: Object,
@@ -201,7 +203,6 @@ export default {
       return store.state.currentUser.model;
     });
     const rooms = computed(() => {
-      console.log(store.state.currentUser);
       return store.state.currentUser.model.get('rooms');
     });
     const statusLabel = computed(() => {
@@ -212,6 +213,9 @@ export default {
     });
 
     async function doDraw() {
+      if (isSubmitting.value) {
+        return;
+      }
       isSubmitting.value = true;
       message.value = status.value = null;
       try {

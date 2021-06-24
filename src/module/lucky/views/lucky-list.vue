@@ -46,7 +46,6 @@ table.table.table-bordered
       th 弹幕内容
       th 奖品
       th 状态
-      th 其它
   tbody(v-if="isLoading")
     tr
       td.text-center(colspan="8")
