@@ -81,7 +81,7 @@ export default {
     });
 
     function onRouteChange(name) {
-      containerStyle.value = name && name.startsWith('user.')
+      containerStyle.value = name && /\.log(in|out)$/.test(name)
         ? 'w-100 flex-grow-1'
         : 'container pt-3';
     }

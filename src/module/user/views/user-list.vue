@@ -34,26 +34,46 @@ table.table.table-bordered
   thead
     tr
       th 用户名
-      th 弹幕
-      th 时间
+      th 房间
+      th 创建时间
+      th 最近登录时间
+      th 最近登录 IP
+      th 状态
+      th
   tbody(v-if="isLoading")
     tr
-      td.text-center(colspan="4")
+      td.text-center(colspan="6")
         span.spinner-border.spinner-border-sm.my-4
   tbody(
     v-if="list.length",
     @click="doFilter",
   )
-    tr(v-for="item in list")
+    tr(v-for="(item, index) in list", :key="item.id")
       td
-        a(
-          href="#",
-          :data-uid="item.uid",
-        ) {{item.uname}}
-      td {{item.content}}
+        router-link(
+          :to="{name: 'user.edit', params: {id: item.id}}",
+        ) {{item.username}}
       td
-        time.text-muted(:datetime="item.time") {{item.time}}
-
+        .pre-wrap {{item.rooms.join('\n')}}
+      td
+        time(:datetime="item.createdAt")
+          small.text-muted {{item.createdAt}}
+      td {{item.lastLoginTime}}
+      td {{item.lastLoginIp}}
+      td
+        span.badge.fs-6(
+          :class="item.status ? 'bg-danger' : 'bg-success'",
+        ) {{item.status ? '禁用' : '正常'}}
+      td
+        .btn-group-sm
+          button.btn.btn-danger(
+            type="button",
+            :disabled="item.isSaving",
+            @click="removeItem(item, index)",
+          )
+            span.spinner-border.spinner-border-sm.me-2(v-if="item.isSaving")
+            i.bi.bi-slash-circle.me-2(v-else)
+            | 禁用
 </template>
 
 <script setup>
