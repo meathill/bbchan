@@ -20,11 +20,9 @@ module.exports = {
     minimize: true,
     minimizer: [
       new TerserPlugin({
-        cache: true,
-        parallel: true,
         terserOptions: {
           ecma: 9,
-          topLevel: true,
+          toplevel: true,
           output: {
             ascii_only: true
           },
@@ -34,11 +32,7 @@ module.exports = {
   },
   plugins: [
     new CopyPlugin({
-      patterns: [
-        {
-          from: 'manifest.json',
-        },
-      ],
+      patterns: ['manifest.json'],
     }),
   ],
 }

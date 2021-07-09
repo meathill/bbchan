@@ -9,7 +9,7 @@
       type="search",
     )
 
-  nav.ms-auto
+  nav.ms-auto.d-flex
     ul.pagination.mb-0
       li.page-item(
         :class="{disabled: page === 0 || isLoading}",
@@ -29,6 +29,12 @@
         )
           span.spinner-border-sm.spinner-border(v-if="isLoading")
           template(v-else) &raquo;
+
+    router-link.btn.btn-primary.ms-3(
+      :to="{name: 'user.new'}",
+    )
+      i.bi.bi-person-plus-fill.me-2
+      | 添加用户
 
 table.table.table-bordered
   thead
