@@ -75,8 +75,7 @@ table.table.table-bordered
         strong.me-1 {{item.number}}
         | )
       td
-        span.badge.fs-6(:class="item.statusClass") {{item.status}}
-      td
+        span.badge.fs-6(:class="item.statusClass") {{item.statusLabel}}
 </template>
 
 <script>
@@ -84,13 +83,10 @@ import {
   onBeforeMount,
 } from 'vue';
 import useList from '@/use/list';
-import Lucky, {
-  STATUS_COMPLETED,
-  STATUS_LABEL,
-  STATUS_NORMAL,
-} from '@/model/lucky';
+import Lucky from '@/model/lucky';
 import moment from 'moment';
 import { TIME } from '@/data/constant';
+import {getStatusInfo} from "@/utils/format";
 
 export default {
   setup() {
@@ -103,17 +99,13 @@ export default {
       } = json;
       startTime = moment(startTime).format(TIME);
       endTime = moment(endTime).format(TIME);
-      const statusClass = status === STATUS_NORMAL
-        ? 'bg-info'
-        : (status === STATUS_COMPLETED) ? 'bg-success' : 'bg-muted';
-      status = STATUS_LABEL[status];
       return {
         ...json,
         id: item.id,
         startTime,
         endTime,
         status,
-        statusClass,
+        ...getStatusInfo(status),
       };
     }
 
