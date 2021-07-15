@@ -43,6 +43,10 @@ nav.navbar.navbar-expand-lg.navbar-dark.bg-dark
           ul.dropdown-menu
             li
               router-link.dropdown-item(
+                :to="{name: 'user.change-password'}",
+              ) 修改密码
+            li
+              router-link.dropdown-item(
                 :to="{name: 'user.logout'}",
               ) 登出
         li.nav-item(

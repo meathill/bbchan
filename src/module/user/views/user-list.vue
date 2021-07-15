@@ -75,11 +75,14 @@ table.table.table-bordered
           button.btn.btn-danger(
             type="button",
             :disabled="item.isSaving",
-            @click="removeItem(item, index)",
+            @click="setUserStatus(item)",
           )
             span.spinner-border.spinner-border-sm.me-2(v-if="item.isSaving")
-            i.bi.bi-slash-circle.me-2(v-else)
-            | 禁用
+            i.bi.me-2(
+              v-else,
+              :class="item.status === STATUS_NORMAL ? 'bi-slash-circle' : 'bi-check-circle'",
+            )
+            | {{item.status === STATUS_NORMAL ? '禁用' : '启用'}}
 </template>
 
 <script setup>
@@ -89,6 +92,10 @@ import {
 } from 'vue';
 import useList from '@/use/list';
 import { rowItemFormatter } from '@/utils/format';
+import {
+  STATUS_NORMAL,
+  STATUS_BANNED,
+} from "@/model/user";
 
 const username = ref('');
 
@@ -108,6 +115,23 @@ const {
   doPrev,
   doNext,
 } = listFunctions;
+
+async function setUserStatus(item) {
+  const status = item.status === STATUS_NORMAL ? STATUS_BANNED : STATUS_NORMAL;
+  const action = item.status === STATUS_NORMAL ? '禁用' : '启用';
+  if (!confirm(`将${action}用户：${item.username}，您确定么？`)) {
+    return;
+  }
+
+  item.isSaving = true;
+  item.model.set('status', status);
+  try {
+    await item.model.save();
+  } catch (e) {
+    alert('禁用用户失败。' + e.message);
+  }
+  item.isSaving = false;
+}
 
 onBeforeMount(() => {
   refresh();

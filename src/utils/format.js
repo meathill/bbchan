@@ -12,6 +12,7 @@ export function rowItemFormatter(item) {
     ...item.toJSON(),
     id: item.id,
     model: item,
+    isSaving: false,
     time,
   };
 }
