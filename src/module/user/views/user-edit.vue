@@ -20,17 +20,18 @@ form.w-50(
     input#email.form-control(
       type="email",
       required,
-      v-model="email",
+      v-model="formData.email",
       autocomplete="email",
+      :readonly="isEdit",
     )
   .mb-3
     label.form-label(
       for="password",
-    ) 密码
+    ) {{isEdit ? '修改' : ''}}密码
     input#password.form-control(
       type="password",
-      required,
-      v-model="password",
+      :required="!isEdit",
+      v-model="formData.password",
       autocomplete="new-password",
     )
   .mb-3
@@ -38,8 +39,8 @@ form.w-50(
       for="rooms",
     ) 房间
     input#rooms.form-control(
-      required,
-      v-model="rooms",
+      :required="!isEdit",
+      v-model="formData.rooms",
     )
 
   hr
@@ -48,37 +49,78 @@ form.w-50(
 
   button.btn.btn-primary
     span.spinner-border.spinner-border-sm.me-2(v-if="isSubmitting")
+    i.bi.bi-person-check-fill.me-2(v-else-if="isEdit")
     i.bi.bi-person-plus-fill.me-2(v-else)
     | 保存
 </template>
 
 <script setup>
-import {ref} from "vue";
+import {
+  reactive,
+  ref,
+  onBeforeMount,
+} from "vue";
 import Alert from "@/component/alert";
-import {User} from 'leancloud-storage';
+import {
+  Cloud,
+  User,
+  Query,
+} from 'leancloud-storage';
+import {useRoute} from 'vue-router';
+import each from 'lodash/each';
 
 const isSubmitting = ref(false);
-const email = ref('');
-const password = ref('');
-const rooms = ref('');
+const isEdit = ref(false);
+const formData = reactive({
+  email: '',
+  password: '',
+  rooms: '',
+})
 const message = ref('');
 const status = ref(false);
 const form = ref(null);
+const route = useRoute();
+
+let user;
 async function doSubmit() {
   if (form.value.matches(':invalid')) {
     return;
   }
-  const user = new User();
-  user.setUsername(email.value);
-  user.setPassword(password.value);
-  user.setEmail(email.value);
-  user.set('rooms', rooms.value.split(/\s*[,，]\s*/));
+  let p;
+  if (isEdit) {
+    p = Cloud.run('changeUser', formData);
+  } else {
+    user = new User();
+    each(formData, (value, key) => {
+      if (key === 'rooms') {
+        value = value.split(/\s*[,，]\s*/);
+      }
+      user.set(key, value);
+    });
+    p = user.save();
+  }
+
   try {
-    await user.save();
+    await p;
     status.value = true;
     message.value = '创建成功';
   } catch (e) {
     message.value = '创建失败。' + e.message;
   }
 }
+onBeforeMount(async () => {
+  const {id} = route.params;
+  if (id) {
+    isEdit.value = true;
+    const query = new Query('_User');
+    user = await query.get(id);
+    each(formData, (value, key) => {
+      value = user.get(key);
+      if (key === 'rooms') {
+        value = value.join(', ');
+      }
+      formData[key] = value;
+    });
+  }
+});
 </script>
