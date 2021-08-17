@@ -72,9 +72,10 @@ table.table.table-bordered
         ) {{item.status ? '禁用' : '正常'}}
       td
         .btn-group-sm
-          button.btn.btn-danger(
+          button.btn(
             type="button",
             :disabled="item.isSaving",
+            :class="item.status === STATUS_NORMAL ? 'btn-danger' : 'btn-success'",
             @click="setUserStatus(item)",
           )
             span.spinner-border.spinner-border-sm.me-2(v-if="item.isSaving")
@@ -86,6 +87,7 @@ table.table.table-bordered
 </template>
 
 <script setup>
+import {Cloud} from 'leancloud-storage';
 import {
   ref,
   onBeforeMount,
@@ -124,9 +126,12 @@ async function setUserStatus(item) {
   }
 
   item.isSaving = true;
-  item.model.set('status', status);
   try {
-    await item.model.save();
+    await Cloud.run('setUser', {
+      userId: item.model.id,
+      status,
+    });
+    item.status = status;
   } catch (e) {
     alert('禁用用户失败。' + e.message);
   }

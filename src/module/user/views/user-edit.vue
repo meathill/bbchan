@@ -87,8 +87,15 @@ async function doSubmit() {
     return;
   }
   let p;
+  let action = '创建';
   if (isEdit) {
-    p = Cloud.run('changeUser', formData);
+    const {password, rooms} = formData;
+    p = Cloud.run('setUser', {
+      rooms,
+      password,
+      userId: route.params.id,
+    });
+    action = '编辑';
   } else {
     user = new User();
     each(formData, (value, key) => {
@@ -103,9 +110,9 @@ async function doSubmit() {
   try {
     await p;
     status.value = true;
-    message.value = '创建成功';
+    message.value = action + '成功';
   } catch (e) {
-    message.value = '创建失败。' + e.message;
+    message.value = action + '失败。' + e.message;
   }
 }
 onBeforeMount(async () => {
