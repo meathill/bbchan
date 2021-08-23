@@ -4,7 +4,11 @@ module.exports = {
   pages: {
     index: {
       entry: 'src/main.js',
-      title: 'BB 酱',
+      title: 'BB酱 管理平台',
+    },
+    popup: {
+      entry: 'src/popup.js',
+      title: 'BB酱',
     },
   },
   lintOnSave: false,
