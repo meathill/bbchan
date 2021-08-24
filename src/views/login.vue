@@ -1,102 +1,38 @@
 <template lang="pug">
 main.form-signin
-  form(@submit.prevent="doLogin")
-    h1.h3.mb-3.fw-normal.text-center Please sign in
-
-    .form-floating
-      input#email.form-control(
-        type="email"
-        placeholder="name@example.com",
-        v-model="email",
-        required,
-      )
-      label(for="email") Email address
-
-    .form-floating
-      input#password.form-control(
-        type="password"
-        placeholder="Password"
-        v-model="password"
-        required,
-      )
-      label(for="password") Password
-
-    .alert(
-      v-if="message",
-      :class="status ? 'alert-success' : 'alert-danger'",
-    ) {{message}}
-
-    button.w-100.btn.btn-lg.btn-primary(
-      :disabled="isLogging",
-    )
-      span.spinner-border.spinner-border-sm.me-2(
-        v-if="isLogging",
-      )
-      | Sign in
-
-  p.mt-5.mb-3.text-muted.text-center BB Chan &copy; 2021
+  login(
+    @logged-in="onLoggedIn",
+  )
 </template>
 
-<script>
-import {
-  ref,
-  onMounted,
-} from 'vue';
-import { User } from 'leancloud-storage';
+<script setup>
 import { useStore } from 'vuex';
 import { useRoute, useRouter } from 'vue-router';
+import {User} from 'leancloud-storage';
 import { SET_CURRENT_USER } from '@/store';
+import Login from '@/component/login';
+import {onBeforeMount} from "vue";
 
-export default {
-  setup() {
-    const isLogging = ref(false);
-    const message = ref('');
-    const status = ref();
-    const email = ref('');
-    const password = ref('');
-    const remember = ref(false);
-    const store = useStore();
-    const route = useRoute();
-    const router = useRouter();
+const store = useStore();
+const route = useRoute();
+const router = useRouter();
 
-    async function doLogin() {
-      isLogging.value = true;
-      message.value = status.value = null;
-      try {
-        const user = await User.loginWithEmail(email.value, password.value);
-        store.commit(SET_CURRENT_USER, user);
-        status.value = true;
-        message.value = '登录成功';
-        if (store.state.accessFrom) {
-          router.replace(store.state.accessFrom);
-        } else {
-          router.replace({
-            name: 'danmu',
-          });
-        }
-      } catch (e) {
-        message.value = '登录失败。' + e.message;
-      }
-      isLogging.value = false;
-    }
-
-    onMounted(() => {
-      if (route.name === 'user.logout') {
-
-      }
+async function onLoggedIn(user) {
+  store.commit(SET_CURRENT_USER, user);
+  if (store.state.accessFrom) {
+    router.replace(store.state.accessFrom);
+  } else {
+    router.replace({
+      name: 'danmu',
     });
+  }
+}
 
-    return {
-      isLogging,
 
-      email,
-      password,
-      remember,
-      message,
-      status,
 
-      doLogin,
-    };
-  },
-};
+onBeforeMount(async () => {
+  if (route.name === 'user.logout') {
+    await User.logOut();
+  }
+});
 </script>

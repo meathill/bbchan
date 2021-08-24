@@ -2,13 +2,28 @@
 .popup(v-if="isLoggedIn")
   .d-flex
     h4 Hello, {{currentUser.username}}
-    a.ms-auto(
+    btn.btn.btn-link.btn-sm.ms-auto.logout-button(
       href="#",
       :class="{disabled: isLogging}",
       @click="logout",
     ) 登出
 
-login.popup(v-else)
+  form(@submit.prevent="onSubmit")
+    fieldset
+      legend 同步弹幕
+      .form-check
+        input#sync-toggle.form-check-input(
+          type="checkbox",
+          v-model="sync",
+        )
+        label.form-check-label(
+          for="sync-toggle",
+        ) 启动
+
+login.popup(
+  v-else,
+  @logged-in="onLoggedIn",
+)
 
 </template>
 
@@ -21,10 +36,11 @@ import {
 import {
   User,
 } from 'leancloud-storage';
-import Login from '@/views/login';
+import Login from '@/component/login';
 
 const isLogging = ref(false);
 const currentUser = ref(null);
+const sync = ref(false);
 
 const isLoggedIn = computed(() => {
   return !!currentUser.value;
@@ -36,12 +52,20 @@ async function logout() {
   }
   isLogging.value = true;
   try {
-    await currentUser.model.logOut();
+    await User.logOut();
   } catch (e) {
     console.log(e);
   }
   currentUser.value = null;
   isLogging.value = false;
+}
+
+async function onSubmit() {
+
+}
+
+async function onLoggedIn() {
+
 }
 
 onBeforeMount(async () => {
