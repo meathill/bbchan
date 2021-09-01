@@ -2,29 +2,36 @@
 .popup(v-if="isLoggedIn")
   .d-flex
     h4 Hello, {{currentUser.username}}
-    btn.btn.btn-link.btn-sm.ms-auto.logout-button(
-      href="#",
+    button.btn.btn-link.btn-sm.ms-auto.logout-button(
+      type="button",
       :class="{disabled: isLogging}",
       @click="logout",
     ) 登出
 
-  form(@submit.prevent="onSubmit")
-    fieldset
+  form(
+    ref="form",
+    @submit.prevent="onSubmit",
+  )
+    fieldset.mb-3
       legend 同步弹幕
       .form-check
         input#sync-toggle.form-check-input(
           type="checkbox",
           v-model="sync",
+          @change="onSwitch",
         )
         label.form-check-label(
           for="sync-toggle",
         ) 启动
 
+    button.btn.btn-primary(
+      v-if="isChanged",
+    ) 保存
+
 login.popup(
   v-else,
   @logged-in="onLoggedIn",
 )
-
 </template>
 
 <script setup>
@@ -39,8 +46,10 @@ import {
 import Login from '@/component/login';
 
 const isLogging = ref(false);
+const isChanged = ref(false);
 const currentUser = ref(null);
 const sync = ref(false);
+const form = ref(null);
 
 const isLoggedIn = computed(() => {
   return !!currentUser.value;
@@ -60,8 +69,20 @@ async function logout() {
   isLogging.value = false;
 }
 
-async function onSubmit() {
+function onSwitch() {
+  isChanged.value = true;
+}
 
+async function onSubmit() {
+  if (form.value.matches(':invalid')) {
+    return;
+  }
+
+  isChanged.value = false;
+  const result = await chrome.runtime.sendMessage({
+    sender: 'bbjiang',
+    sync: sync.value,
+  });
 }
 
 async function onLoggedIn() {
@@ -70,9 +91,17 @@ async function onLoggedIn() {
 
 onBeforeMount(async () => {
   const user = User.current();
-  if (user) {
-    currentUser.value = user.toJSON();
-    currentUser.model = user;
+  if (!user) {
+    return;
   }
+  currentUser.value = user.toJSON();
+  currentUser.model = user;
+
+  const tab = await chrome.tabs.query({
+    active: true,
+    currentWindow: true,
+  });
+  const {url} = tab;
+
 });
 </script>

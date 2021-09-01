@@ -4,6 +4,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import './style/popup.styl';
 import AV from 'leancloud-storage';
 import { LC_APP_ID, LC_APP_SECRET } from '@/config/leancloud';
+import '@/chrome';
 
 AV.init({
   appId: LC_APP_ID,
